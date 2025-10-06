@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SenseWay - Google Maps Clone with Multiple Routes</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDHPjtYrwgCTT8UHt74y-_RgBHawPG8-nM&libraries=places,geometry"></script>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #map {
+      height: 100%;
+      width: calc(100% - 400px);
+      float: right;
+    }
+    .sidebar {
+      width: 400px;
+      height: 100%;
+      float: left;
+      background-color: #fff;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    .sidebar input, .sidebar button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .transport-icons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .transport-icons button {
+      flex: 1;
+      margin: 0 5px;
+      font-size: 18px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    .transport-icons button:hover {
+      background-color: #e0e0e0;
+    }
+    .transport-icons button.active {
+      background-color: #0078d7;
+      color: white;
+      border-color: #005a9e;
+    }
+    .dashboard {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .dashboard p {
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .directions-panel {
+      margin-top: 10px;
+      font-size: 14px;
+      background-color: #fafafa;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .direction-step {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .direction-step:hover {
+      background-color: #f0f8ff;
+    }
+    .direction-step:last-child {
+      border-bottom: none;
+    }
+    .direction-step .step-icon {
+      display: inline-block;
+      width: 20px;
+      text-align: center;
+      margin-right: 8px;
+    }
+    .layer-toggle label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .stack-buttons {
+      position: absolute;
+      bottom: 20px;
+      right: 60px;
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      grid-gap: 10px;
+      z-index: 5;
+    }
+    .stack-buttons button {
+      background: white;
+      border: none;
+      padding: 12px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .route-list {
+      margin-top: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 5px;
+      font-size: 14px;
+    }
+    .route-item {
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s ease;
+    }
+    .route-item:last-child {
+      border-bottom: none;
+    }
+    .route-item:hover {
+      background-color: #f0f8ff;
+    }
+    .route-item.selected {
+      background-color: #0078d7;
+      color: white;
+      font-weight: bold;
+    }
+    #calmest-route-btn, #calm-sync-btn, #start-nav-btn, #voice-nav-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+    #calmest-route-btn:hover, #calm-sync-btn:hover, #start-nav-btn:hover, #voice-nav-btn:hover {
+      background-color: #218838;
+    }
+    #calm-sync-btn.active, #voice-nav-btn.active, #start-nav-btn.active {
+      background-color: #dc3545;
+    }
+    #calm-sync-btn.active:hover, #voice-nav-btn.active:hover, #start-nav-btn.active:hover {
+      background-color: #c82333;
+    }
+    .navigator-panel {
+      position: absolute;
+      top: 20px;
+      left: 420px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      font-size: 16px;
+      max-width: 300px;
+      z-index: 10;
+      display: none;
+    }
+    .navigator-panel .step-icon {
+      display: inline-block;
+      width: 24px;
+      text-align: center;
+      margin-right: 10px;
+      font-size: 20px;
+    }
+    .navigator-panel .instruction {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .rest-stops-panel {
+      margin-top: 15px;
+      font-size: 14px;
+      background-color: #fafafa;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .rest-stop-item {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .rest-stop-item:hover {
+      background-color: #f0f8ff;
+    }
+    .rest-stop-item:last-child {
+      border-bottom: none;
+    }
+    .rest-stop-item .stop-icon {
+      display: inline-block;
+      width: 20px;
+      text-align: center;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <input id="start" type="text" placeholder="Choose starting point..." />
+    <input id="end" type="text" placeholder="Choose destination..." />
+    <div class="transport-icons">
+      <button id="btn-driving" onclick="setMode('DRIVING')" title="Driving">🚗</button>
+      <button id="btn-two-wheeler" onclick="setMode('TWO_WHEELER')" title="Two Wheeler">🛵</button>
+      <button id="btn-transit" onclick="setMode('TRANSIT')" title="Transit">🚌</button>
+      <button id="btn-walking" onclick="setMode('WALKING')" title="Walking">🚶</button>
+    </div>
+    <button onclick="calculateRoute()">Get Route</button>
+    <button id="calmest-route-btn" onclick="highlightCalmestRoute()" title="Show Calmest Route">Show Calmest Route</button>
+    <button id="calm-sync-btn" onclick="toggleCalmSync()" title="Calm Sync On/Off">Calm Sync Off</button>
+    <button id="start-nav-btn" onclick="toggleNavigation()" title="Start Navigation">Start Navigation</button>
+    <div class="layer-toggle">
+      <label><input type="checkbox" id="traffic-toggle" /> Live Traffic</label>
+      <label><input type="checkbox" id="transit-toggle" /> Transit Layer</label>
+      <label><input type="checkbox" id="bicycling-toggle" /> Bicycle Layer</label>
+    </div>
+    <div class="route-list" id="route-list"></div>
+    <div class="dashboard">
+      <p><strong>Distance:</strong> <span id="distance">-</span></p>
+      <p><strong>ETA:</strong> <span id="eta">-</span></p>
+      <p><strong>Noise Level:</strong> <span id="noise">-</span> dB (simulated)</p>
+      <p><strong>Air Quality Index:</strong> <span id="aqi">-</span></p>
+      <p><strong>PM2.5:</strong> <span id="pm25">-</span> μg/m³</p>
+      <p><strong>PM10:</strong> <span id="pm10">-</span> μg/m³</p>
+      <p><strong>NO₂:</strong> <span id="no2">-</span> μg/m³</p>
+      <p><strong>O₃:</strong> <span id="o3">-</span> μg/m³</p>
+      <p><strong>Calm Score:</strong> <span id="calm-score">-</span></p>
+      <button id="voice-nav-btn" onclick="toggleVoiceNavigation()" title="Voice Navigation On/Off">Voice Navigation Off</button>
+      <div class="directions-panel" id="directions-panel"></div>
+      <div class="rest-stops-panel" id="rest-stops-panel"></div>
+    </div>
+  </div>
+  <div id="map"></div>
+  <div class="stack-buttons">
+    <button id="locate-button" title="Locate Me">📍</button>
+    <button id="streetview-button" title="Browse Street Image">🖼️</button>
+  </div>
+  <div class="navigator-panel" id="navigator-panel">
+    <span class="step-icon"></span>
+    <span class="instruction">Follow the route</span>
+  </div>
+  <script>
+    let map, directionsService;
+    let startAutocomplete, endAutocomplete;
+    let trafficLayer, transitLayer, bicyclingLayer;
+    let currentMode = 'DRIVING';
+    let userMarker;
+    let routePolylines = [];
+    let selectedRouteIndex = null;
+    let startMarker, endMarker;
+    let stepMarker, stepPolyline;
+    let routesData = [];
+    let voiceNavigationEnabled = false;
+    let navigationActive = false;
+    let calmSyncEnabled = false;
+    let currentStepIndex = 0;
+    let watchId = null;
+    let lastSpokenInstruction = null;
+    let selectedVoice = null;
+    const openWeatherMapApiKey = 'dfa4d288b2447a5fd2cb0effb7a54b5b';
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 13.6288, lng: 78.6569 },
+        zoom: 13,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true,
+      });
+      directionsService = new google.maps.DirectionsService();
+      startAutocomplete = new google.maps.places.Autocomplete(document.getElementById("start"));
+      endAutocomplete = new google.maps.places.Autocomplete(document.getElementById("end"));
+      trafficLayer = new google.maps.TrafficLayer();
+      transitLayer = new google.maps.TransitLayer();
+      bicyclingLayer = new google.maps.BicyclingLayer();
+      document.getElementById("traffic-toggle").addEventListener("change", function () {
+        this.checked ? trafficLayer.setMap(map) : trafficLayer.setMap(null);
+      });
+      document.getElementById("transit-toggle").addEventListener("change", function () {
+        this.checked ? transitLayer.setMap(map) : transitLayer.setMap(null);
+      });
+      document.getElementById("bicycling-toggle").addEventListener("change", function () {
+        this.checked ? bicyclingLayer.setMap(map) : bicyclingLayer.setMap(null);
+      });
+      document.getElementById("locate-button").addEventListener("click", locateUser);
+      document.getElementById("streetview-button").addEventListener("click", browseStreetView);
+      setMode("DRIVING");
+      initializeSpeechSynthesis();
+    }
+
+    function initializeSpeechSynthesis() {
+      if (!('speechSynthesis' in window)) {
+        alert("Your browser does not support voice navigation. Please use a modern browser like Chrome, Edge, or Safari.");
+        document.getElementById("voice-nav-btn").disabled = true;
+        document.getElementById("voice-nav-btn").style.opacity = 0.5;
+        voiceNavigationEnabled = false;
+        return;
+      }
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        selectedVoice = voices.find(voice => voice.lang === 'en-US' && voice.default) || voices.find(voice => voice.lang === 'en-US') || voices[0];
+        if (!selectedVoice) {
+          console.warn("No suitable voice found for en-US, using default.");
+        }
+      };
+      if (window.speechSynthesis.getVoices().length) {
+        loadVoices();
+      } else {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      ["DRIVING", "TWO_WHEELER", "TRANSIT", "WALKING"].forEach(m => {
+        const btn = document.getElementById(`btn-${m.toLowerCase().replace('_', '-')}`);
+        if (btn) btn.classList.remove("active");
+      });
+      const id = `btn-${mode.toLowerCase().replace('_', '-')}`;
+      const el = document.getElementById(id);
+      if (el) el.classList.add("active");
+      if (navigationActive) {
+        stopNavigation();
+      }
+    }
+
+    function locateUser() {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          map.setCenter(pos);
+          map.setZoom(16);
+          if (!userMarker) {
+            userMarker = new google.maps.Marker({
+              position: pos,
+              map: map,
+              title: "Your Location",
+              icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                fillColor: "#0078d7",
+                fillOpacity: 0.9,
+                strokeWeight: 2,
+                strokeColor: "white",
+              },
+            });
+          } else {
+            userMarker.setPosition(pos);
+          }
+          document.getElementById("start").value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+        },
+        (error) => {
+          let errorMsg = "Failed to get your location: ";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg += "Permission denied. Please enable location services.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg += "Location unavailable. Try again later.";
+              break;
+            case error.TIMEOUT:
+              errorMsg += "Request timed out. Please try again.";
+              break;
+            default:
+              errorMsg += "An unknown error occurred.";
+          }
+          alert(errorMsg);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    }
+
+    function browseStreetView() {
+      const streetViewService = new google.maps.StreetViewService();
+      const sv = new google.maps.StreetViewPanorama(document.getElementById("map"));
+      const center = map.getCenter();
+      streetViewService.getPanorama({ location: center, radius: 50 }, (data, status) => {
+        if (status === "OK") {
+          sv.setPano(data.location.pano);
+          sv.setVisible(true);
+        } else {
+          alert("No Street View found near this location.");
+        }
+      });
+    }
+
+    function clearRoutes() {
+      routePolylines.forEach(polyline => polyline.setMap(null));
+      routePolylines = [];
+      routesData = [];
+      selectedRouteIndex = null;
+      document.getElementById("route-list").innerHTML = "";
+      document.getElementById("directions-panel").innerHTML = "";
+      document.getElementById("rest-stops-panel").innerHTML = "";
+      updateDashboard(null);
+      if (startMarker) startMarker.setMap(null);
+      if (endMarker) endMarker.setMap(null);
+      if (stepMarker) stepMarker.setMap(null);
+      if (stepPolyline) stepPolyline.setMap(null);
+      startMarker = null;
+      endMarker = null;
+      stepMarker = null;
+      stepPolyline = null;
+      stopNavigation();
+    }
+
+    function simulateNoiseLevel() {
+      return Math.floor(Math.random() * 40) + 30;
+    }
+
+    function aqiDescription(aqi) {
+      if (aqi <= 50) return "Good";
+      if (aqi <= 100) return "Moderate";
+      if (aqi <= 150) return "Unhealthy for Sensitive Groups";
+      if (aqi <= 200) return "Unhealthy";
+      if (aqi <= 300) return "Very Unhealthy";
+      return "Hazardous";
+    }
+
+    async function fetchAQI(lat, lng, retries = 3) {
+      for (let i = 0; i <= retries; i++) {
+        try {
+          const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lng}&appid=${openWeatherMapApiKey}`
+          );
+          if (!response.ok) throw new Error(`AQI API error: ${response.status}`);
+          const data = await response.json();
+          if (data && data.list && data.list.length > 0) {
+            return data.list[0];
+          }
+          return null;
+        } catch (e) {
+          console.error(`AQI fetch attempt ${i + 1} failed:`, e);
+          if (i === retries) {
+            console.warn("AQI fetch failed after retries, using fallback values.");
+            return null;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+
+    function calculateCalmScore(noise, aqi) {
+      const noiseNorm = Math.min(Math.max((noise - 30) / 40, 0), 1);
+      const aqiNorm = Math.min(aqi / 300, 1);
+      const score = 1 - (0.5 * noiseNorm + 0.5 * aqiNorm);
+      return Math.round(score * 100) / 100;
+    }
+
+    async function recalculateCalmScores(currentStepIndex, userPos) {
+      const updatedRoutesData = [];
+      for (let i = 0; i < routesData.length; i++) {
+        const routeData = routesData[i];
+        const route = routeData.route;
+        let latSum = 0, lngSum = 0, pointsCount = 0;
+        const steps = route.legs[0].steps;
+        if (currentStepIndex >= steps.length) {
+          updatedRoutesData.push(routeData);
+          continue;
+        }
+        const remainingPath = [];
+        for (let j = currentStepIndex; j < steps.length; j++) {
+          steps[j].path.forEach(point => {
+            remainingPath.push(point);
+            latSum += point.lat();
+            lngSum += point.lng();
+            pointsCount++;
+          });
+        }
+        const avgLat = pointsCount > 0 ? latSum / pointsCount : route.overview_path[Math.floor(route.overview_path.length / 2)].lat();
+        const avgLng = pointsCount > 0 ? lngSum / pointsCount : route.overview_path[Math.floor(route.overview_path.length / 2)].lng();
+        const noise = simulateNoiseLevel();
+        const aqiData = await fetchAQI(avgLat, avgLng);
+        const aqi = aqiData ? aqiData.main.aqi * 50 : 100;
+        const components = aqiData ? aqiData.components : {
+          pm2_5: null,
+          pm10: null,
+          no2: null,
+          o3: null,
+        };
+        const calmScore = calculateCalmScore(noise, aqi);
+        updatedRoutesData.push({
+          ...routeData,
+          noise,
+          aqi,
+          components,
+          calmScore,
+        });
+      }
+      routesData.splice(0, routesData.length, ...updatedRoutesData);
+      renderRouteList(routesData);
+      return getCalmestRouteIndex(routesData);
+    }
+
+    async function calculateRoute() {
+      const start = document.getElementById("start").value.trim();
+      const end = document.getElementById("end").value.trim();
+      if (!start || !end) {
+        alert("Please enter both start and destination locations.");
+        return;
+      }
+      clearRoutes();
+      const travelMode = currentMode === "TWO_WHEELER" ? google.maps.TravelMode.DRIVING : google.maps.TravelMode[currentMode] || google.maps.TravelMode.DRIVING;
+      const request = {
+        origin: start,
+        destination: end,
+        travelMode: travelMode,
+        provideRouteAlternatives: true,
+        drivingOptions: travelMode === google.maps.TravelMode.DRIVING ? {
+          departureTime: new Date(),
+          trafficModel: "optimistic",
+        } : undefined,
+        transitOptions: travelMode === google.maps.TravelMode.TRANSIT ? {
+          modes: [google.maps.TransitMode.BUS, google.maps.TransitMode.RAIL, google.maps.TransitMode.SUBWAY, google.maps.TransitMode.TRAM],
+          routingPreference: "LESS_WALKING",
+        } : undefined,
+      };
+      try {
+        directionsService.route(request, async (result, status) => {
+          if (status === "OK") {
+            routesData = [];
+            const routes = result.routes;
+            if (!routes.length) {
+              alert("No routes found. Try different locations or modes.");
+              return;
+            }
+            for (let i = 0; i < routes.length; i++) {
+              const route = routes[i];
+              let latSum = 0, lngSum = 0, pointsCount = 0;
+              route.overview_path.forEach((point) => {
+                latSum += point.lat();
+                lngSum += point.lng();
+                pointsCount++;
+              });
+              const avgLat = latSum / pointsCount;
+              const avgLng = lngSum / pointsCount;
+              const noise = simulateNoiseLevel();
+              const aqiData = await fetchAQI(avgLat, avgLng);
+              const aqi = aqiData ? aqiData.main.aqi * 50 : 100;
+              const components = aqiData ? aqiData.components : {
+                pm2_5: null,
+                pm10: null,
+                no2: null,
+                o3: null,
+              };
+              const calmScore = calculateCalmScore(noise, aqi);
+              routesData.push({
+                route,
+                noise,
+                aqi,
+                components,
+                calmScore,
+                mode: currentMode,
+              });
+            }
+            drawRoutes(routesData);
+            selectRoute(0);
+          } else {
+            console.error(`Directions API failed: ${status}`);
+            let errorMsg = "Failed to fetch routes: ";
+            if (status === "ZERO_RESULTS") errorMsg += "No routes found. Try more specific locations.";
+            else if (status === "OVER_QUERY_LIMIT") errorMsg += "API quota exceeded. Check your Google Cloud Console.";
+            else if (status === "INVALID_REQUEST") errorMsg += "Invalid locations or mode.";
+            else errorMsg += status;
+            alert(errorMsg);
+          }
+        });
+      } catch (error) {
+        console.error("Directions service error:", error);
+        alert("An error occurred while fetching routes. Please check your internet or API key.");
+      }
+    }
+
+    function drawRoutes(routes) {
+      const colors = ["#0078d7", "#2e8b57", "#ff8c00", "#6a5acd", "#dc143c"];
+      routePolylines.forEach(polyline => polyline.setMap(null));
+      routePolylines = [];
+      routes.forEach((data, i) => {
+        const isWalking = data.mode === "WALKING";
+        const isTwoWheeler = data.mode === "TWO_WHEELER";
+        const isTransit = data.mode === "TRANSIT";
+        const polylineOptions = {
+          path: data.route.overview_path,
+          strokeColor: colors[i % colors.length],
+          strokeOpacity: isWalking || isTwoWheeler ? 1 : isTransit ? 0.6 : 0.7,
+          strokeWeight: isWalking ? 5 : isTwoWheeler ? 4 : 6,
+          map: map,
+          zIndex: 10,
+        };
+        if (isWalking) {
+          polylineOptions.icons = [{
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 2, strokeColor: colors[i % colors.length] },
+            offset: '0',
+            repeat: '10px',
+          }];
+        } else if (isTwoWheeler) {
+          polylineOptions.icons = [{
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 2, strokeColor: colors[i % colors.length] },
+            offset: '0',
+            repeat: '20px',
+          }];
+        }
+        const polyline = new google.maps.Polyline(polylineOptions);
+        polyline.addListener("click", () => selectRoute(i));
+        routePolylines.push(polyline);
+      });
+      renderRouteList(routes);
+    }
+
+    function renderRouteList(routes) {
+      const list = document.getElementById("route-list");
+      list.innerHTML = "";
+      routes.forEach((data, i) => {
+        const item = document.createElement("div");
+        item.className = "route-item";
+        item.id = `route-item-${i}`;
+        const modeDisplay = data.mode === "DRIVING" ? "Car" : data.mode === "TWO_WHEELER" ? "Two-Wheeler" : data.mode;
+        item.innerHTML = `
+          <strong>Route ${i + 1} (${modeDisplay})</strong><br/>
+          Distance: ${data.route.legs[0].distance.text}<br/>
+          Duration: ${data.route.legs[0].duration.text}<br/>
+          Noise: ${data.noise} dB<br/>
+          AQI: ${data.aqi} (${aqiDescription(data.aqi)})<br/>
+          Calm Score: ${data.calmScore}
+        `;
+        item.addEventListener("click", () => selectRoute(i));
+        list.appendChild(item);
+      });
+    }
+
+    function findRestStops(route) {
+      const restStopsPanel = document.getElementById("rest-stops-panel");
+      restStopsPanel.innerHTML = "<strong>Rest Stops Along Route:</strong>";
+      const placesService = new google.maps.places.PlacesService(map);
+      const path = route.overview_path;
+      const midpointIndex = Math.floor(path.length / 2);
+      const midpoint = path[midpointIndex];
+      const request = {
+        location: midpoint,
+        radius: 5000, // 5km radius
+        types: ['park', 'hospital'],
+      };
+      placesService.nearbySearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+          const stops = results.slice(0, 5); // Limit to 5 results
+          stops.forEach((place, i) => {
+            const stopDiv = document.createElement("div");
+            stopDiv.className = "rest-stop-item";
+            const icon = place.types.includes('park') ? '🌳' : '🏥';
+            const name = place.name || 'Unnamed';
+            const vicinity = place.vicinity || 'Unknown location';
+            stopDiv.innerHTML = `
+              <span class="stop-icon">${icon}</span>
+              <span>${i + 1}. ${name} (${vicinity})</span>
+            `;
+            stopDiv.addEventListener("click", () => {
+              map.panTo(place.geometry.location);
+              map.setZoom(15);
+              const marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: map,
+                title: name,
+                icon: {
+                  url: place.types.includes('park') ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                  scaledSize: new google.maps.Size(32, 32),
+                },
+              });
+              setTimeout(() => {
+                marker.setMap(null);
+                if (selectedRouteIndex !== null) {
+                  const routeBounds = new google.maps.LatLngBounds();
+                  routesData[selectedRouteIndex].route.overview_path.forEach(point => routeBounds.extend(point));
+                  map.fitBounds(routeBounds);
+                }
+              }, 5000);
+            });
+            restStopsPanel.appendChild(stopDiv);
+          });
+        } else {
+          restStopsPanel.innerHTML += "<p>No parks or hospitals found along this route.</p>";
+        }
+      });
+    }
+
+    function selectRoute(index) {
+      if (selectedRouteIndex !== null) {
+        const prevMode = routesData[selectedRouteIndex].mode;
+        routePolylines[selectedRouteIndex].setOptions({
+          strokeOpacity: prevMode === "WALKING" || prevMode === "TWO_WHEELER" ? 1 : prevMode === "TRANSIT" ? 0.6 : 0.7,
+          strokeWeight: prevMode === "WALKING" ? 5 : prevMode === "TWO_WHEELER" ? 4 : 6,
+          zIndex: 10,
+        });
+        document.getElementById(`route-item-${selectedRouteIndex}`).classList.remove("selected");
+      }
+      selectedRouteIndex = index;
+      currentStepIndex = 0;
+      const polyline = routePolylines[index];
+      const currMode = routesData[index].mode;
+      polyline.setOptions({
+        strokeOpacity: 1,
+        strokeWeight: currMode === "WALKING" ? 7 : currMode === "TWO_WHEELER" ? 5 : 8,
+        zIndex: 20,
+      });
+      document.getElementById(`route-item-${index}`).classList.add("selected");
+      updateRouteMarkers(routesData[index].route);
+      const bounds = new google.maps.LatLngBounds();
+      routesData[index].route.overview_path.forEach(point => bounds.extend(point));
+      map.fitBounds(bounds);
+      updateDashboard(routesData[index]);
+      renderDirections(routesData[index].route);
+      findRestStops(routesData[index].route);
+      if (navigationActive) {
+        startNavigation();
+      }
+      if (voiceNavigationEnabled && navigationActive) {
+        const instruction = routesData[index].route.legs[0].steps[0].instructions.replace(/<[^>]+>/g, '');
+        lastSpokenInstruction = instruction;
+        speakDirections(instruction);
+        updateNavigatorPanel(0);
+      }
+    }
+
+    function getCalmestRouteIndex(routes) {
+      let maxCalmIndex = 0;
+      let maxCalmScore = routes[0].calmScore;
+      for (let i = 1; i < routes.length; i++) {
+        if (routes[i].calmScore > maxCalmScore) {
+          maxCalmScore = routes[i].calmScore;
+          maxCalmIndex = i;
+        }
+      }
+      return maxCalmIndex;
+    }
+
+    function updateRouteMarkers(route) {
+      if (startMarker) startMarker.setMap(null);
+      if (endMarker) endMarker.setMap(null);
+      if (stepMarker) stepMarker.setMap(null);
+      if (stepPolyline) stepPolyline.setMap(null);
+      const startPos = route.legs[0].start_location;
+      const endPos = route.legs[0].end_location;
+      startMarker = new google.maps.Marker({
+        position: startPos,
+        map: map,
+        title: "Start",
+        icon: {
+          url: "http://maps.google.com/mapfiles/kml/pal4/icon57.png",
+          scaledSize: new google.maps.Size(40, 40),
+          fallback: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: "#00FF00",
+            fillOpacity: 0.8,
+            strokeWeight: 2,
+            strokeColor: "white",
+          },
+        },
+      });
+      endMarker = new google.maps.Marker({
+        position: endPos,
+        map: map,
+        title: "Destination",
+        icon: {
+          url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          scaledSize: new google.maps.Size(40, 40),
+        },
+      });
+    }
+
+    function updateDashboard(data) {
+      if (!data) {
+        document.getElementById("distance").textContent = "-";
+        document.getElementById("eta").textContent = "-";
+        document.getElementById("noise").textContent = "-";
+        document.getElementById("aqi").textContent = "-";
+        document.getElementById("pm25").textContent = "-";
+        document.getElementById("pm10").textContent = "-";
+        document.getElementById("no2").textContent = "-";
+        document.getElementById("o3").textContent = "-";
+        document.getElementById("calm-score").textContent = "-";
+        document.getElementById("directions-panel").innerHTML = "";
+        document.getElementById("rest-stops-panel").innerHTML = "";
+        return;
+      }
+      document.getElementById("distance").textContent = data.route.legs[0].distance.text;
+      document.getElementById("eta").textContent = data.route.legs[0].duration.text;
+      document.getElementById("noise").textContent = data.noise;
+      document.getElementById("aqi").textContent = `${data.aqi} (${aqiDescription(data.aqi)})`;
+      document.getElementById("pm25").textContent = data.components.pm2_5 ? data.components.pm2_5.toFixed(2) : "-";
+      document.getElementById("pm10").textContent = data.components.pm10 ? data.components.pm10.toFixed(2) : "-";
+      document.getElementById("no2").textContent = data.components.no2 ? data.components.no2.toFixed(2) : "-";
+      document.getElementById("o3").textContent = data.components.o3 ? data.components.o3.toFixed(2) : "-";
+      document.getElementById("calm-score").textContent = data.calmScore;
+    }
+
+    function renderDirections(route) {
+      const directionsPanel = document.getElementById("directions-panel");
+      directionsPanel.innerHTML = "<strong>Directions:</strong>";
+      route.legs[0].steps.forEach((step, i) => {
+        const stepDiv = document.createElement("div");
+        stepDiv.className = "direction-step";
+        const instruction = step.instructions.replace(/<[^>]+>/g, '');
+        stepDiv.innerHTML = `
+          <span class="step-icon">${getStepIcon(step)}</span>
+          <span>${i + 1}. ${instruction} (${step.distance.text})</span>
+        `;
+        stepDiv.addEventListener("click", () => {
+          highlightStep(step, i);
+          if (voiceNavigationEnabled) {
+            lastSpokenInstruction = instruction;
+            speakDirections(instruction);
+            updateNavigatorPanel(i);
+          }
+        });
+        directionsPanel.appendChild(stepDiv);
+      });
+    }
+
+    function getStepIcon(step) {
+      if (step.maneuver) {
+        if (step.maneuver.includes("left")) return "↰";
+        if (step.maneuver.includes("right")) return "↱";
+        if (step.maneuver.includes("straight")) return "↑";
+      }
+      return step.travel_mode === "TRANSIT" ? "🚌" : "→";
+    }
+
+    function highlightStep(step, index) {
+      if (stepMarker) stepMarker.setMap(null);
+      if (stepPolyline) stepPolyline.setMap(null);
+      stepMarker = new google.maps.Marker({
+        position: step.start_location,
+        map: map,
+        title: `Step ${index + 1}`,
+        icon: {
+          url: "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
+          scaledSize: new google.maps.Size(24, 24),
+        },
+      });
+      stepPolyline = new google.maps.Polyline({
+        path: step.path,
+        strokeColor: "#FFD700",
+        strokeOpacity: 1,
+        strokeWeight: 5,
+        map: map,
+        zIndex: 30,
+      });
+      const bounds = new google.maps.LatLngBounds();
+      step.path.forEach(point => bounds.extend(point));
+      map.fitBounds(bounds);
+      setTimeout(() => {
+        if (stepMarker) stepMarker.setMap(null);
+        if (stepPolyline) stepPolyline.setMap(null);
+        stepMarker = null;
+        stepPolyline = null;
+        if (selectedRouteIndex !== null) {
+          const routeBounds = new google.maps.LatLngBounds();
+          routesData[selectedRouteIndex].route.overview_path.forEach(point => routeBounds.extend(point));
+          map.fitBounds(routeBounds);
+        }
+      }, 3000);
+    }
+
+    function highlightCalmestRoute() {
+      if (routesData.length === 0) return;
+      const maxCalmIndex = getCalmestRouteIndex(routesData);
+      selectRoute(maxCalmIndex);
+      routePolylines.forEach((polyline, i) => {
+        const isWalking = routesData[i].mode === "WALKING";
+        const isTwoWheeler = routesData[i].mode === "TWO_WHEELER";
+        const isTransit = routesData[i].mode === "TRANSIT";
+        polyline.setOptions({
+          strokeOpacity: isWalking || isTwoWheeler ? 1 : isTransit ? 0.6 : 0.7,
+          strokeWeight: isWalking ? 5 : isTwoWheeler ? 4 : 6,
+          zIndex: 10,
+          strokeColor: i === maxCalmIndex ? "#28a745" : polyline.get('strokeColor'),
+          icons: isWalking ? [{
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 2, strokeColor: i === maxCalmIndex ? "#28a745" : polyline.get('strokeColor') },
+            offset: '0',
+            repeat: '10px',
+          }] : isTwoWheeler ? [{
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 2, strokeColor: i === maxCalmIndex ? "#28a745" : polyline.get('strokeColor') },
+            offset: '0',
+            repeat: '20px',
+          }] : null,
+        });
+      });
+    }
+
+    function toggleVoiceNavigation() {
+      if (!('speechSynthesis' in window)) {
+        alert("Voice navigation is not supported in your browser.");
+        return;
+      }
+      voiceNavigationEnabled = !voiceNavigationEnabled;
+      const btn = document.getElementById("voice-nav-btn");
+      btn.textContent = `Voice Navigation ${voiceNavigationEnabled ? 'On' : 'Off'}`;
+      btn.classList.toggle("active", voiceNavigationEnabled);
+      if (voiceNavigationEnabled && selectedRouteIndex !== null) {
+        const instruction = routesData[selectedRouteIndex].route.legs[0].steps[currentStepIndex].instructions.replace(/<[^>]+>/g, '');
+        lastSpokenInstruction = instruction;
+        speakDirections(instruction);
+        if (navigationActive) {
+          updateNavigatorPanel(currentStepIndex);
+        }
+      } else {
+        window.speechSynthesis.cancel();
+        lastSpokenInstruction = null;
+      }
+    }
+
+    function toggleCalmSync() {
+      calmSyncEnabled = !calmSyncEnabled;
+      const btn = document.getElementById("calm-sync-btn");
+      btn.textContent = `Calm Sync ${calmSyncEnabled ? 'On' : 'Off'}`;
+      btn.classList.toggle("active", calmSyncEnabled);
+      if (calmSyncEnabled && navigationActive && selectedRouteIndex !== null && routesData.length > 1) {
+        recalculateCalmScores(currentStepIndex, userMarker.getPosition()).then(newCalmIndex => {
+          if (newCalmIndex !== selectedRouteIndex) {
+            selectRoute(newCalmIndex);
+            if (voiceNavigationEnabled) {
+              const instruction = routesData[newCalmIndex].route.legs[0].steps[currentStepIndex].instructions.replace(/<[^>]+>/g, '');
+              lastSpokenInstruction = instruction;
+              speakDirections("New calmer route selected: " + instruction);
+            }
+          }
+        });
+      }
+    }
+
+    function speakDirections(text) {
+      if (!voiceNavigationEnabled || !('speechSynthesis' in window) || !text) {
+        return;
+      }
+      if (text === lastSpokenInstruction && navigationActive) {
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.volume = 1;
+      utterance.rate = 1.1;
+      utterance.pitch = 1;
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      utterance.onend = () => {
+        lastSpokenInstruction = text;
+        console.log(`Speech completed: ${text}`);
+      };
+      utterance.onerror = (event) => {
+        console.error("Speech synthesis error:", event.error);
+        alert("Failed to play voice navigation. Please check your browser's audio settings or try a different browser.");
+      };
+      utterance.onstart = () => {
+        console.log(`Speaking: ${text}`);
+      };
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleNavigation() {
+      if (selectedRouteIndex === null) {
+        alert("Please select a route to start navigation.");
+        return;
+      }
+      navigationActive = !navigationActive;
+      const btn = document.getElementById("start-nav-btn");
+      btn.textContent = navigationActive ? "Stop Navigation" : "Start Navigation";
+      btn.classList.toggle("active", navigationActive);
+      if (navigationActive) {
+        startNavigation();
+      } else {
+        stopNavigation();
+      }
+    }
+
+    async function startNavigation() {
+      if (selectedRouteIndex === null || !navigator.geolocation) {
+        alert("Geolocation not supported or no route selected.");
+        navigationActive = false;
+        document.getElementById("start-nav-btn").textContent = "Start Navigation";
+        document.getElementById("start-nav-btn").classList.remove("active");
+        return;
+      }
+      stopNavigation();
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+          if (userMarker) {
+            userMarker.setPosition(userPos);
+          } else {
+            userMarker = new google.maps.Marker({
+              position: userPos,
+              map: map,
+              title: "Your Location",
+              icon: {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                scale: 6,
+                fillColor: "#0078d7",
+                fillOpacity: 0.9,
+                strokeWeight: 2,
+                strokeColor: "white",
+                rotation: position.coords.heading || 0,
+              },
+            });
+          }
+          watchId = navigator.geolocation.watchPosition(
+            async (position) => {
+              const userPos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+              const heading = position.coords.heading || 0;
+              userMarker.setPosition(userPos);
+              userMarker.setIcon({
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                scale: 6,
+                fillColor: "#0078d7",
+                fillOpacity: 0.9,
+                strokeWeight: 2,
+                strokeColor: "white",
+                rotation: heading,
+              });
+              const route = routesData[selectedRouteIndex].route;
+              const steps = route.legs[0].steps;
+              let closestStepIndex = currentStepIndex;
+              let minDistance = Infinity;
+
+              steps.forEach((step, i) => {
+                step.path.forEach(point => {
+                  const distance = google.maps.geometry.spherical.computeDistanceBetween(userPos, point);
+                  if (distance < minDistance) {
+                    minDistance = distance;
+                    closestStepIndex = i;
+                  }
+                });
+              });
+
+              if (closestStepIndex !== currentStepIndex && closestStepIndex < steps.length) {
+                currentStepIndex = closestStepIndex;
+                const instruction = steps[currentStepIndex].instructions.replace(/<[^>]+>/g, '');
+                updateNavigatorPanel(currentStepIndex);
+                if (voiceNavigationEnabled) {
+                  lastSpokenInstruction = instruction;
+                  speakDirections(instruction);
+                }
+                highlightStep(steps[currentStepIndex], currentStepIndex);
+
+                if (calmSyncEnabled && routesData.length > 1 && currentStepIndex < steps.length - 1) {
+                  const newCalmIndex = await recalculateCalmScores(currentStepIndex, userPos);
+                  if (newCalmIndex !== selectedRouteIndex) {
+                    selectRoute(newCalmIndex);
+                    if (voiceNavigationEnabled) {
+                      const newInstruction = routesData[newCalmIndex].route.legs[0].steps[currentStepIndex].instructions.replace(/<[^>]+>/g, '');
+                      lastSpokenInstruction = newInstruction;
+                      speakDirections("New calmer route selected: " + newInstruction);
+                    }
+                  }
+                }
+              }
+
+              map.setCenter(userPos);
+              map.setZoom(17);
+
+              const destination = new google.maps.LatLng(route.legs[0].end_location);
+              const distanceToDestination = google.maps.geometry.spherical.computeDistanceBetween(userPos, destination);
+              if (distanceToDestination < 15) {
+                const arrivalInstruction = "You have arrived at your destination.";
+                if (voiceNavigationEnabled) {
+                  lastSpokenInstruction = arrivalInstruction;
+                  speakDirections(arrivalInstruction);
+                }
+                updateNavigatorPanel(-1);
+                stopNavigation();
+              }
+            },
+            (error) => {
+              console.error("Geolocation error:", error);
+              let errorMsg = "Unable to track location: ";
+              switch (error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMsg += "Permission denied. Please enable location services.";
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMsg += "Location unavailable. Try again later.";
+                  break;
+                case error.TIMEOUT:
+                  errorMsg += "Request timed out. Please try again.";
+                  break;
+                default:
+                  errorMsg += "An unknown error occurred.";
+              }
+              alert(errorMsg);
+              stopNavigation();
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 3000,
+              maximumAge: 0,
+            }
+          );
+          updateNavigatorPanel(currentStepIndex);
+          if (voiceNavigationEnabled && selectedRouteIndex !== null) {
+            const instruction = routesData[selectedRouteIndex].route.legs[0].steps[currentStepIndex].instructions.replace(/<[^>]+>/g, '');
+            lastSpokenInstruction = instruction;
+            speakDirections(instruction);
+          }
+        },
+        (error) => {
+          let errorMsg = "Failed to get initial location: ";
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg += "Permission denied. Please enable location services.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg += "Location unavailable. Try again later.";
+              break;
+            case error.TIMEOUT:
+              errorMsg += "Request timed out. Please try again.";
+              break;
+            default:
+              errorMsg += "An unknown error occurred.";
+          }
+          alert(errorMsg);
+          stopNavigation();
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 3000,
+          maximumAge: 0,
+        }
+      );
+    }
+
+    function stopNavigation() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      navigationActive = false;
+      document.getElementById("start-nav-btn").textContent = "Start Navigation";
+      document.getElementById("start-nav-btn").classList.remove("active");
+      document.getElementById("navigator-panel").style.display = "none";
+      window.speechSynthesis.cancel();
+      lastSpokenInstruction = null;
+      if (userMarker) {
+        userMarker.setIcon({
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#0078d7",
+          fillOpacity: 0.9,
+          strokeWeight: 2,
+          strokeColor: "white",
+        });
+      }
+    }
+
+    function updateNavigatorPanel(stepIndex) {
+      const panel = document.getElementById("navigator-panel");
+      const icon = panel.querySelector(".step-icon");
+      const instruction = panel.querySelector(".instruction");
+      if (selectedRouteIndex === null || stepIndex === -1) {
+        panel.style.display = "none";
+        return;
+      }
+      const steps = routesData[selectedRouteIndex].route.legs[0].steps;
+      if (stepIndex >= steps.length) {
+        panel.style.display = "none";
+        return;
+      }
+      panel.style.display = "block";
+      icon.textContent = getStepIcon(steps[stepIndex]);
+      instruction.textContent = steps[stepIndex].instructions.replace(/<[^>]+>/g, '');
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>
