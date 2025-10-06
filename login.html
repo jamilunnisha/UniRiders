@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UniRiders — Login</title>
+  <style>
+    :root{
+      --bg-1: #667eea;
+      --bg-2: #764ba2;
+      --accent: #00d4ff;
+      --accent-2: #0099cc;
+      --card-bg: #ffffff;
+      --muted: #666;
+      --dark: #1a202c;
+      --radius: 12px;
+    }
+
+    html,body{height:100%;margin:0;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;color:#222;background: linear-gradient(135deg,var(--bg-1),var(--bg-2));}
+
+    /* Centered layout */
+    .wrap {
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px;
+    }
+
+    .card {
+      width:100%;
+      max-width:980px;
+      background: rgba(255,255,255,0.98);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(10,20,40,0.2);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+    }
+
+    /* left branding column */
+    .brand {
+      padding: 40px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    .logo {
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      color:var(--accent);
+      font-size:22px;
+      text-decoration:none;
+    }
+
+    .logo .spark { font-size:26px; transform:rotate(-12deg); }
+
+    .brand h1{
+      font-size:28px;
+      margin:6px 0;
+      color:var(--dark);
+    }
+    .brand p { color:var(--muted); line-height:1.45; margin:0; }
+
+    /* right form column */
+    .form-area {
+      padding: 36px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:stretch;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+    }
+
+    .tabs {
+      display:flex;
+      gap:8px;
+      margin-bottom:6px;
+    }
+
+    .tab {
+      padding:10px 14px;
+      border-radius:999px;
+      background:transparent;
+      border: 1px solid rgba(20,30,50,0.04);
+      cursor:pointer;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:white;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+
+    .subtitle { color:var(--muted); font-size:13px; margin-bottom:8px; }
+
+    form { display:grid; gap:12px; align-items:start; }
+
+    /* grid for inputs */
+    .grid-2 {
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+    }
+
+    .grid-3 {
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+    }
+
+    label { font-size:12px; color:#444; font-weight:600; display:block; margin-bottom:6px; }
+
+    .input, .select {
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border: 1px solid #e6edf3;
+      background: #fff;
+      font-size:14px;
+      outline:none;
+      box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+    }
+
+    .input::placeholder { color:#b8c5cf; }
+
+    .row {
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .muted { color:var(--muted); font-size:13px; }
+
+    .primary {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+      padding:12px 16px;
+      border-radius:10px;
+      background: linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:white;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    .secondary {
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid #e6edf3;
+      background:white;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .google-btn {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid rgba(0,0,0,0.06);
+      background:white;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .helper {
+      font-size:13px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .small {
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .note {
+      padding:10px 12px;
+      border-radius:10px;
+      background:#fff8e6;
+      color:#7a5a00;
+      font-size:13px;
+      border:1px solid rgba(250,200,80,0.12);
+    }
+
+    /* success toast */
+    .toast {
+      position: fixed;
+      right:20px;
+      bottom:20px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      color:white;
+      padding:12px 18px;
+      border-radius:10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      display:none;
+      z-index:9999;
+    }
+
+    /* responsive */
+    @media (max-width:980px){
+      .card { grid-template-columns: 1fr; margin: 12px; }
+      .brand { padding:20px; text-align:center; align-items:center; }
+      .form-area { padding:18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main" aria-labelledby="login-title">
+      <div class="brand" aria-hidden="false">
+        <a class="logo" href="#" onclick="return false;">
+          <span class="spark">⚡</span>
+          <span>UniRiders</span>
+        </a>
+        <h1 id="login-title">Welcome to UniRiders</h1>
+        <p>Sign in to manage rides, join shared autos, and keep safe. Students and drivers — separate quick sign-ins below.</p>
+
+        <div style="margin-top:18px;">
+          <div class="note"><strong>Hackathon demo:</strong> Google sign-in button is a placeholder. Hook your OAuth provider (Firebase/Auth0/etc.) in the script area.</div>
+        </div>
+      </div>
+
+      <div class="form-area">
+        <div class="tabs" role="tablist" aria-label="Login type">
+          <button id="tab-student" class="tab active" role="tab" aria-selected="true">Student Login</button>
+          <button id="tab-driver" class="tab" role="tab" aria-selected="false">Driver Login</button>
+        </div>
+
+        <div id="student-form-wrapper" class="panel" role="tabpanel">
+          <div class="subtitle">Student sign-in</div>
+
+          <div style="display:grid;gap:10px;">
+            <button class="google-btn" id="student-google">
+              <!-- simple Google icon -->
+              <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.9 0 7.1 1.3 9.4 3.3l7-7C35.8 2 30.2 0 24 0 14.6 0 6.6 4.8 2.6 12.1l8 6.2C12.9 14 18 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-2.9-.4-4.1H24v8.1h12.6c-.5 2.6-2.3 5.1-5.4 6.7l8.2 6.3C44.4 36.3 46.5 30.8 46.5 24.5z"/><path fill="#FBBC05" d="M10.6 29.9A14.8 14.8 0 0 1 9.5 24c0-1.5.3-2.9.9-4.2L2.6 12.1A24 24 0 0 0 0 24c0 3.9.9 7.6 2.6 11.1l8-6.2z"/><path fill="#34A853" d="M24 48c6.2 0 11.8-2 16-5.4l-8.2-6.3c-2.3 1.6-5.4 2.7-7.8 2.7-6 0-11.1-4.5-12.4-10.5l-8 6.2C6.6 43.2 14.6 48 24 48z"/></svg>
+              Continue with Google
+            </button>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="flex:1;height:1px;background:#eef3f7"></div>
+              <div class="small" style="white-space:nowrap;color:var(--muted)">or sign in with details</div>
+              <div style="flex:1;height:1px;background:#eef3f7"></div>
+            </div>
+          </div>
+
+          <form id="student-form" novalidate>
+            <div>
+              <label>Student Name</label>
+              <div class="grid-2">
+                <input class="input" id="student-first" placeholder="First name (e.g., Anu)" required />
+                <input class="input" id="student-last" placeholder="Last name (e.g., Kumar)" required />
+              </div>
+            </div>
+
+            <div>
+              <label>Student Roll Number</label>
+              <input class="input" id="student-roll" placeholder="Roll no (e.g., MBU2025CS045)" required />
+            </div>
+
+            <div>
+              <label>Phone Number</label>
+              <input class="input" id="student-phone" placeholder="+91 98XXXXXXXX (e.g., +91 9876543210)" inputmode="tel" required />
+            </div>
+
+            <div>
+              <label>Emergency Contact 1</label>
+              <div class="grid-2">
+                <input class="input" id="stu-emg1-name" placeholder="Contact name (e.g., Mom)" required />
+                <input class="input" id="stu-emg1-phone" placeholder="Phone (e.g., +91 98XXXXXXXX)" inputmode="tel" required />
+              </div>
+            </div>
+
+            <div>
+              <label>Emergency Contact 2</label>
+              <div class="grid-2">
+                <input class="input" id="stu-emg2-name" placeholder="Contact name (e.g., Dad)" />
+                <input class="input" id="stu-emg2-phone" placeholder="Phone (optional)" inputmode="tel" />
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:6px;align-items:center;">
+              <button type="submit" class="primary">Student Login</button>
+              <button type="button" class="secondary" id="student-reset">Reset</button>
+              <div style="margin-left:auto" class="small">Need help? <a href="#" style="color:var(--accent);text-decoration:none;">Contact Support</a></div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Driver panel -->
+        <div id="driver-form-wrapper" class="panel" role="tabpanel" style="display:none;">
+          <div class="subtitle">Driver sign-in</div>
+
+          <div style="display:grid;gap:10px;">
+            <button class="google-btn" id="driver-google">
+              <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.9 0 7.1 1.3 9.4 3.3l7-7C35.8 2 30.2 0 24 0 14.6 0 6.6 4.8 2.6 12.1l8 6.2C12.9 14 18 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-2.9-.4-4.1H24v8.1h12.6c-.5 2.6-2.3 5.1-5.4 6.7l8.2 6.3C44.4 36.3 46.5 30.8 46.5 24.5z"/><path fill="#FBBC05" d="M10.6 29.9A14.8 14.8 0 0 1 9.5 24c0-1.5.3-2.9.9-4.2L2.6 12.1A24 24 0 0 0 0 24c0 3.9.9 7.6 2.6 11.1l8-6.2z"/><path fill="#34A853" d="M24 48c6.2 0 11.8-2 16-5.4l-8.2-6.3c-2.3 1.6-5.4 2.7-7.8 2.7-6 0-11.1-4.5-12.4-10.5l-8 6.2C6.6 43.2 14.6 48 24 48z"/></svg>
+              Continue with Google
+            </button>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="flex:1;height:1px;background:#eef3f7"></div>
+              <div class="small" style="white-space:nowrap;color:var(--muted)">or sign in with details</div>
+              <div style="flex:1;height:1px;background:#eef3f7"></div>
+            </div>
+          </div>
+
+          <form id="driver-form" novalidate>
+            <div>
+              <label>Full Name</label>
+              <input class="input" id="driver-name" placeholder="Full name (e.g., Ravi Kumar)" required />
+            </div>
+
+            <div>
+              <label>Phone Number</label>
+              <input class="input" id="driver-phone" placeholder="+91 98XXXXXXXX (e.g., +91 9876543210)" inputmode="tel" required />
+            </div>
+
+            <div>
+              <label>Blood Group</label>
+              <select id="driver-blood" class="select" required>
+                <option value="" disabled selected>Choose blood group (e.g., B+)</option>
+                <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Emergency Contact</label>
+              <div class="grid-2">
+                <input class="input" id="drv-emg-name" placeholder="Contact name (e.g., Suresh)" required />
+                <input class="input" id="drv-emg-phone" placeholder="Phone (e.g., +91 98XXXXXXXX)" inputmode="tel" required />
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:6px;align-items:center;">
+              <button type="submit" class="primary">Driver Login</button>
+              <button type="button" class="secondary" id="driver-reset">Reset</button>
+              <div style="margin-left:auto" class="small">Already registered? <a href="#" style="color:var(--accent);text-decoration:none;">View Profile</a></div>
+            </div>
+          </form>
+        </div>
+
+        <div style="margin-top:auto" class="helper">
+          <strong>Privacy:</strong> Phone numbers and emergency contacts are used only for safety/notifications during campus transport. You can integrate this with your backend storage (Firebase/Firestore/SQL) at submission time.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Success</div>
+
+  <script>
+    // Tabs
+    const tabStudent = document.getElementById('tab-student');
+    const tabDriver = document.getElementById('tab-driver');
+    const studentPanel = document.getElementById('student-form-wrapper');
+    const driverPanel = document.getElementById('driver-form-wrapper');
+
+    function showStudent(){
+      tabStudent.classList.add('active'); tabStudent.setAttribute('aria-selected','true');
+      tabDriver.classList.remove('active'); tabDriver.setAttribute('aria-selected','false');
+      studentPanel.style.display = ''; driverPanel.style.display = 'none';
+    }
+    function showDriver(){
+      tabDriver.classList.add('active'); tabDriver.setAttribute('aria-selected','true');
+      tabStudent.classList.remove('active'); tabStudent.setAttribute('aria-selected','false');
+      driverPanel.style.display = ''; studentPanel.style.display = 'none';
+    }
+
+    tabStudent.addEventListener('click', showStudent);
+    tabDriver.addEventListener('click', showDriver);
+
+    // Simple toast helper
+    function showToast(msg='Success', ms=2500){
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.style.display='block';
+      setTimeout(()=> t.style.display='none', ms);
+    }
+
+    // Reset buttons
+    document.getElementById('student-reset').addEventListener('click', ()=> document.getElementById('student-form').reset());
+    document.getElementById('driver-reset').addEventListener('click', ()=> document.getElementById('driver-form').reset());
+
+    // Placeholder Google button bindings (UI only)
+    document.getElementById('student-google').addEventListener('click', ()=> {
+      // Hook your Google OAuth here (Firebase/Auth0). For hackathon demo we'll show a fake success.
+      showToast('Google sign-in (student) — implement OAuth to finalize');
+      console.log('STUDENT: trigger Google OAuth flow here');
+    });
+    document.getElementById('driver-google').addEventListener('click', ()=> {
+      showToast('Google sign-in (driver) — implement OAuth to finalize');
+      console.log('DRIVER: trigger Google OAuth flow here');
+    });
+
+    // Student submit handling - validate basic fields and print payload
+    document.getElementById('student-form').addEventListener('submit', function(e){
+      e.preventDefault();
+
+      const payload = {
+        firstName: document.getElementById('student-first').value.trim(),
+        lastName: document.getElementById('student-last').value.trim(),
+        rollNumber: document.getElementById('student-roll').value.trim(),
+        phone: document.getElementById('student-phone').value.trim(),
+        emergency1: { name: document.getElementById('stu-emg1-name').value.trim(), phone: document.getElementById('stu-emg1-phone').value.trim() },
+        emergency2: { name: document.getElementById('stu-emg2-name').value.trim(), phone: document.getElementById('stu-emg2-phone').value.trim() },
+        type: 'student',
+        ts: new Date().toISOString()
+      };
+
+      // Basic client validation
+      if(!payload.firstName || !payload.lastName || !payload.rollNumber || !payload.phone || !payload.emergency1.name || !payload.emergency1.phone){
+        alert('Please fill required student fields (name, roll number, phone, emergency contact 1).');
+        return;
+      }
+
+      // Demo: show in console and show toast. Replace this with AJAX / Firebase / fetch to send to backend.
+      console.log('Student login payload:', payload);
+      showToast('Student login success — check console for payload');
+
+      // Optionally: clear sensitive fields
+      // document.getElementById('student-form').reset();
+    });
+
+    // Driver submit handling
+    document.getElementById('driver-form').addEventListener('submit', function(e){
+      e.preventDefault();
+
+      const payload = {
+        fullName: document.getElementById('driver-name').value.trim(),
+        phone: document.getElementById('driver-phone').value.trim(),
+        bloodGroup: document.getElementById('driver-blood').value,
+        emergency: { name: document.getElementById('drv-emg-name').value.trim(), phone: document.getElementById('drv-emg-phone').value.trim() },
+        type: 'driver',
+        ts: new Date().toISOString()
+      };
+
+      if(!payload.fullName || !payload.phone || !payload.bloodGroup || !payload.emergency.name || !payload.emergency.phone){
+        alert('Please fill required driver fields (full name, phone, blood group, emergency contact).');
+        return;
+      }
+
+      console.log('Driver login payload:', payload);
+      showToast('Driver login success — check console for payload');
+
+      // Optionally: document.getElementById('driver-form').reset();
+    });
+
+    // Accessibility: allow keyboard toggle
+    tabStudent.addEventListener('keydown', e=> { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showStudent(); }});
+    tabDriver.addEventListener('keydown', e=> { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showDriver(); }});
+  </script>
+
+
+<!-- Firebase + Socket.io scripts -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // TODO: replace with your Firebase config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  async function connectSocketWithToken(role, extra) {
+    const user = auth.currentUser;
+    if (!user) return alert('Please sign in first.');
+    const token = await user.getIdToken();
+    const socket = io('/', { auth: { token } });
+    socket.on('connect', () => {
+      console.log('socket connected', socket.id);
+      socket.emit('presence', { role, ...extra });
+    });
+    socket.on('vehicle:location', (data) => console.log('vehicle location', data));
+    if (role === 'driver') {
+      setInterval(async () => {
+        const lat = 13.6 + (Math.random()-0.5)*0.01;
+        const lng = 79.5 + (Math.random()-0.5)*0.01;
+        socket.emit('driver:location', { vehicleId: extra && extra.vehicleId || 'veh-demo', lat, lng });
+      }, 5000);
+    }
+  }
+  function googleSignIn(role, extra) {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(result => {
+      connectSocketWithToken(role, extra);
+      window.location.href = 'index.html';
+    }).catch(err => alert(err.message));
+  }
+</script>
+
+
+
+<!-- Demo quick-sign buttons (works without Firebase for quick hackathon demo) -->
+<div style="max-width:520px;margin:12px auto;text-align:center;">
+  <p style="color:#666">Quick demo: no Firebase required — creates a demo connection to the server and simulates movement.</p>
+  <button id="demoDriverBtn" style="padding:10px 14px;margin:6px;border-radius:8px;background:#ffb74d;border:none;cursor:pointer;">Sign in as Demo Driver</button>
+  <button id="demoStudentBtn" style="padding:10px 14px;margin:6px;border-radius:8px;background:#90caf9;border:none;cursor:pointer;">Sign in as Demo Student</button>
+</div>
+
+<script>
+// Demo quick-connect: uses socket.io client without Firebase token for local demo (server permits dev mode)
+document.getElementById('demoDriverBtn').addEventListener('click', () => {
+  const vehicleId = 'veh-demo-' + Math.floor(Math.random()*900 + 100);
+  const socket = io(); // no auth token -> server dev mode will accept
+  socket.on('connect', () => {
+    console.log('Demo driver socket connected', socket.id);
+    socket.emit('presence', { role: 'driver', vehicleId });
+    // simulate location updates every 3s
+    let lat = 13.6288, lng = 79.4192;
+    const iv = setInterval(() => {
+      lat += (Math.random()-0.5)*0.001;
+      lng += (Math.random()-0.5)*0.001;
+      socket.emit('driver:location', { vehicleId, lat, lng });
+      document.getElementById('status').textContent = 'Demo driver sharing vehicleId=' + vehicleId + ' coords=' + lat.toFixed(4) + ',' + lng.toFixed(4);
+    }, 3000);
+    // store iv so we can stop if needed
+    socket.on('disconnect', () => clearInterval(iv));
+  });
+});
+
+document.getElementById('demoStudentBtn').addEventListener('click', () => {
+  const vehicleId = prompt('Enter vehicleId to track (or leave blank to track demo vehicle "veh-demo-100")', 'veh-demo-100') || 'veh-demo-100';
+  const socket = io();
+  socket.on('connect', () => {
+    console.log('Demo student connected', socket.id);
+    socket.emit('presence', { role: 'student' });
+    socket.emit('track:vehicle', vehicleId);
+    document.getElementById('status').textContent = 'Demo student tracking vehicleId=' + vehicleId;
+  });
+  socket.on('vehicle:location', (data) => {
+    console.log('live', data);
+    // show simple visual in page if element exists
+    const el = document.getElementById('demoLive');
+    if (el) el.textContent = JSON.stringify(data);
+  });
+});
+</script>
+
+<div id="demoLive" style="max-width:520px;margin:8px auto;color:#333"></div>
+
+
+</body>
+</html>
