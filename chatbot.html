@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBU Smart Transport Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chat-container {
+            height: 100vh;
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+        }
+        .header-gradient {
+            background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
+        }
+        .message-animation {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="chat-container flex flex-col">
+        <!-- Header -->
+        <div class="header-gradient text-white p-4 shadow-lg">
+            <div class="flex items-center space-x-3">
+                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0M15 17a2 2 0 104 0"/>
+                </svg>
+                <div>
+                    <h1 class="text-xl font-bold">MBU Smart Transport</h1>
+                    <p class="text-sm opacity-90">Real-time ride coordination</p>
+                </div>
+            </div>
+            
+            <!-- Live Stats Bar -->
+            <div id="stats-bar" class="flex justify-between mt-3 text-xs bg-black bg-opacity-20 rounded-lg p-2">
+                <span class="flex items-center">
+                    <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                    </svg>
+                    <span id="driver-count">12</span> Drivers
+                </span>
+                <span class="flex items-center">
+                    <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span id="wait-time">8 minutes</span>
+                </span>
+                <span class="flex items-center">
+                    <svg id="demand-icon" class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <span id="demand-level">Medium</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <!-- Messages will be inserted here -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="border-t bg-white p-4">
+            <div class="flex items-center space-x-3">
+                <input
+                    type="text"
+                    id="message-input"
+                    placeholder="Type your message..."
+                    class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                    id="send-button"
+                    class="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
+                >
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="flex justify-center space-x-2 mt-3">
+                <button onclick="handleQuickAction('Book a Ride')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">🚱 Quick Book</button>
+                <button onclick="handleQuickAction('Check Fares')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">💰 Fares</button>
+                <button onclick="handleQuickAction('Live Status')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors">📊 Live</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let messages = [
+            {
+                id: 1,
+                text: "Welcome to MBU Smart Transport! 🚗 I help students and drivers coordinate rides efficiently. How can I assist you today?",
+                sender: 'bot',
+                timestamp: new Date(),
+                options: ['Book a Ride', 'Register as Driver', 'Check Fares', 'Live Status']
+            }
+        ];
+        
+        let currentFlow = '';
+        let userType = '';
+        let rideData = {};
+        
+        // Mock data
+        const destinations = [
+            { name: 'Tirupati Railway Station', distance: '12 km', baseFare: 150 },
+            { name: 'Tirupati Bus Station', distance: '10 km', baseFare: 120 },
+            { name: 'Chandana Brothers Mall', distance: '8 km', baseFare: 100 },
+            { name: 'TTD Temple', distance: '15 km', baseFare: 180 },
+            { name: 'Srikalahasti', distance: '25 km', baseFare: 300 },
+            { name: 'Renigunta Airport', distance: '20 km', baseFare: 250 }
+        ];
+
+        const liveData = {
+            availableDrivers: 12,
+            pendingRequests: 8,
+            peakHours: false,
+            demandLevel: 'Medium',
+            averageWaitTime: '8 minutes'
+        };
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messages-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+
+        // Initialize the app
+        function init() {
+            renderMessages();
+            
+            // Event listeners
+            sendButton.addEventListener('click', handleSendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleSendMessage();
+            });
+        }
+
+        // Render all messages
+        function renderMessages() {
+            messagesContainer.innerHTML = '';
+            messages.forEach(message => {
+                const messageElement = createMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+            scrollToBottom();
+        }
+
+        // Create a message element
+        function createMessageElement(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex message-animation ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                message.sender === 'user' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-white text-gray-800 shadow-md'
+            }`;
+            
+            const textP = document.createElement('p');
+            textP.className = 'text-sm whitespace-pre-line';
+            textP.textContent = message.text;
+            contentDiv.appendChild(textP);
+            
+            // Add options if present
+            if (message.options) {
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'mt-3 space-y-2';
+                
+                message.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.className = 'option-button block w-full text-left px-3 py-2 text-xs bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 border border-blue-200';
+                    button.textContent = option;
+                    button.onclick = () => handleOptionClick(option);
+                    optionsDiv.appendChild(button);
+                });
+                
+                contentDiv.appendChild(optionsDiv);
+            }
+            
+            // Add timestamp
+            const timestampP = document.createElement('p');
+            timestampP.className = 'text-xs opacity-70 mt-1';
+            timestampP.textContent = message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            contentDiv.appendChild(timestampP);
+            
+            messageDiv.appendChild(contentDiv);
+            return messageDiv;
+        }
+
+        // Add a new message
+        function addMessage(text, sender = 'bot', options = null) {
+            const newMessage = {
+                id: Date.now(),
+                text,
+                sender,
+                timestamp: new Date(),
+                options
+            };
+            messages.push(newMessage);
+            
+            const messageElement = createMessageElement(newMessage);
+            messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        // Handle send message
+        function handleSendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            // Add user message
+            addMessage(text, 'user');
+            messageInput.value = '';
+            
+            // Process input with delay
+            setTimeout(() => {
+                processUserInput(text);
+            }, 500);
+        }
+
+        // Handle quick actions
+        function handleQuickAction(action) {
+            messageInput.value = action;
+            handleSendMessage();
+        }
+
+        // Handle option clicks
+        function handleOptionClick(option) {
+            messageInput.value = option;
+            setTimeout(handleSendMessage, 100);
+        }
+
+        // Process user input
+        function processUserInput(input) {
+            const lowerInput = input.toLowerCase();
+            
+            if (currentFlow === 'booking') {
+                handleBookingFlow(lowerInput);
+            } else if (currentFlow === 'driver-registration') {
+                handleDriverFlow(lowerInput);
+            } else {
+                // Main menu logic
+                if (lowerInput.includes('book') || lowerInput.includes('ride')) {
+                    startBookingFlow();
+                } else if (lowerInput.includes('driver') || lowerInput.includes('register')) {
+                    startDriverFlow();
+                } else if (lowerInput.includes('fare') || lowerInput.includes('price')) {
+                    showFares();
+                } else if (lowerInput.includes('status') || lowerInput.includes('live')) {
+                    showLiveStatus();
+                } else {
+                    addMessage("I can help you with booking rides, driver registration, checking fares, or live status. What would you like to do?", 'bot', 
+                        ['Book a Ride', 'Register as Driver', 'Check Fares', 'Live Status']);
+                }
+            }
+        }
+
+        // Start booking flow
+        function startBookingFlow() {
+            currentFlow = 'booking';
+            userType = 'student';
+            addMessage("Great! Let me help you book a ride. Where would you like to go?", 'bot');
+            
+            const destinationOptions = destinations.map(dest => 
+                `${dest.name} (₹${dest.baseFare})`
+            );
+            
+            setTimeout(() => {
+                addMessage("Here are popular destinations:", 'bot', destinationOptions);
+            }, 1000);
+        }
+
+        // Handle booking flow
+        function handleBookingFlow(input) {
+            if (!rideData.destination) {
+                // Find matching destination
+                const selectedDest = destinations.find(dest => 
+                    input.includes(dest.name.toLowerCase()) || 
+                    dest.name.toLowerCase().includes(input)
+                );
+                
+                if (selectedDest) {
+                    rideData.destination = selectedDest;
+                    addMessage(`Perfect! You selected ${selectedDest.name}. When do you need the ride?`, 'bot',
+                        ['Now', 'In 30 minutes', 'In 1 hour', 'Schedule for later']);
+                } else {
+                    addMessage("I didn't find that destination. Please choose from the list or type a specific location.", 'bot');
+                }
+            } else if (!rideData.timing) {
+                if (input.includes('now')) {
+                    rideData.timing = 'immediate';
+                    completeBooking('immediate');
+                } else if (input.includes('30')) {
+                    rideData.timing = '30min';
+                    completeBooking('30min');
+                } else if (input.includes('hour') || input.includes('1')) {
+                    rideData.timing = '1hour';
+                    completeBooking('1hour');
+                } else {
+                    addMessage("Please specify when you need the ride:", 'bot',
+                        ['Now', 'In 30 minutes', 'In 1 hour', 'Schedule for later']);
+                }
+            }
+        }
+
+        // Complete booking
+        function completeBooking(timing) {
+            const surge = liveData.peakHours ? 1.5 : 1;
+            const finalFare = Math.round(rideData.destination.baseFare * surge);
+            
+            addMessage(`🎉 Booking confirmed!
+    
+📍 Destination: ${rideData.destination.name}
+⏰ Timing: ${timing === 'immediate' ? 'Now' : timing === '30min' ? 'In 30 minutes' : 'In 1 hour'}
+💰 Fare: ₹${finalFare} ${surge > 1 ? '(Peak hours)' : ''}
+🚗 Driver will be assigned shortly
+
+You'll receive SMS updates. Track your ride in real-time!`, 'bot',
+                ['Track Ride', 'Book Another', 'Main Menu']);
+            
+            currentFlow = '';
+            rideData = {};
+        }
+
+        // Start driver flow
+        function startDriverFlow() {
+            currentFlow = 'driver-registration';
+            userType = 'driver';
+            addMessage("Welcome, Driver! Are you registering as a new driver or updating your status?", 'bot',
+                ['New Registration', 'Update Status', 'View Earnings']);
+        }
+
+        // Handle driver flow
+        function handleDriverFlow(input) {
+            if (input.includes('new') || input.includes('register')) {
+                addMessage(`📋 Driver Registration Process:
+
+1. Vehicle Details (Auto/Car/Bike)
+2. License Verification
+3. Route Preferences
+4. Contact Information
+
+Please share your vehicle type:`, 'bot', ['Auto', 'Car', 'Bike']);
+            } else if (input.includes('status')) {
+                addMessage("Update your availability:", 'bot', 
+                    ['Available Now', 'Busy', 'Offline', 'On Route to MBU']);
+            } else if (input.includes('earnings')) {
+                addMessage(`💰 Your Earnings Summary:
+
+Today: ₹650
+This Week: ₹4,200
+This Month: ₹18,500
+
+Peak earnings: 6-8 PM and weekends
+Bonus available: Complete 5 rides for ₹100 extra!`, 'bot',
+                    ['View Detailed Report', 'Peak Hours Alert', 'Main Menu']);
+            }
+        }
+
+        // Show fares
+        function showFares() {
+            let fareText = "💰 Transparent Fare Structure:\n\n";
+            destinations.forEach(dest => {
+                fareText += `📍 ${dest.name}\n   Base: ₹${dest.baseFare} | Peak: ₹${Math.round(dest.baseFare * 1.5)}\n\n`;
+            });
+            
+            fareText += `🔄 Dynamic Pricing:
+• Normal hours: Base fare
+• Peak hours (7-9 AM, 5-8 PM): 1.5x
+• Festival/Holiday: 2x
+• Night (10 PM - 6 AM): 1.3x
+
+Shared rides: 30% discount per person`;
+            
+            addMessage(fareText, 'bot', ['Book a Ride', 'Shared Ride', 'Main Menu']);
+        }
+
+        // Show live status
+        function showLiveStatus() {
+            addMessage(`📊 Live Transportation Status:
+
+🚗 Available Drivers: ${liveData.availableDrivers}
+⏳ Pending Requests: ${liveData.pendingRequests}
+📈 Demand Level: ${liveData.demandLevel}
+ⱖ️ Average Wait Time: ${liveData.averageWaitTime}
+
+${liveData.peakHours ? '🔴 Peak Hours Active - Higher demand' : '🟢 Normal Traffic'}
+
+📅 Festival Alert: Diwali approaching - expect high demand on Oct 31-Nov 2`, 'bot',
+                ['Book Now', 'Set Alert', 'Driver Mode']);
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+
+        // Simulate live data updates
+        setInterval(() => {
+            liveData.availableDrivers = Math.floor(Math.random() * 20) + 5;
+            liveData.pendingRequests = Math.floor(Math.random() * 15) + 1;
+            liveData.averageWaitTime = Math.floor(Math.random() * 10) + 3 + ' minutes';
+            
+            document.getElementById('driver-count').textContent = liveData.availableDrivers;
+            document.getElementById('wait-time').textContent = liveData.averageWaitTime;
+        }, 30000); // Update every 30 seconds
+    </script>
+</body>
+</html>
