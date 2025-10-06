@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBU Smart Transport - Real-time Auto Booking System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 MBU Smart Transport</h1>
+            <p>Intelligent Auto Booking & Dynamic Pricing System</p>
+            <div class="mode-switcher">
+                <button class="mode-btn active" onclick="switchMode('student')">👨‍🎓 Student</button>
+                <button class="mode-btn" onclick="switchMode('driver')">🚙 Driver</button>
+                <button class="mode-btn" onclick="switchMode('admin')">⚙ Admin</button>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div class="alert success" id="successAlert"></div>
+        <div class="alert warning" id="warningAlert"></div>
+        <div class="alert info" id="infoAlert"></div>
+
+        <div class="main-layout">
+            <!-- Student Panel -->
+            <div class="card" id="studentPanel">
+                <h2>📱 Request a Ride</h2>
+                
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fromLocation">📍 From</label>
+                            <select class="form-control" id="fromLocation" onchange="calculateEstimate()">
+                                <option value="">Select Pickup Point</option>
+                                <option value="mbu-main-gate">MBU Main Gate</option>
+                                <option value="mbu-hostels">MBU Hostels</option>
+                                <option value="mbu-library">MBU Library</option>
+                                <option value="mbu-cafeteria">MBU Cafeteria</option>
+                                <option value="mbu-sports">MBU Sports Complex</option>
+                                <option value="current">📍 Current Location</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="toLocation">🎯 To</label>
+                            <select class="form-control" id="toLocation" onchange="calculateEstimate()">
+                                <option value="">Select Destination</option>
+                                <option value="tirupati">Tirupati Main</option>
+                                <option value="tirupati-railway">Tirupati Railway Station</option>
+                                <option value="tirupati-bus">Tirupati Bus Stand</option>
+                                <option value="leela-mall">Leela Mall</option>
+                                <option value="prozone-mall">Prozone Mall</option>
+                                <option value="inox-cinema">INOX Cinema</option>
+                                <option value="tirupati-airport">Tirupati Airport</option>
+                                <option value="renigunta">Renigunta Junction</option>
+                                <option value="chandragiri">Chandragiri</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="whenTravel">⏰ When</label>
+                            <select class="form-control" id="whenTravel" onchange="calculateEstimate()">
+                                <option value="now">Now</option>
+                                <option value="15min">In 15 minutes</option>
+                                <option value="30min">In 30 minutes</option>
+                                <option value="1hour">In 1 hour</option>
+                                <option value="custom">Custom Time</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="passengers">👥 Passengers</label>
+                            <select class="form-control" id="passengers" onchange="calculateEstimate()">
+                                <option value="1">1 Person</option>
+                                <option value="2">2 People</option>
+                                <option value="3">3 People</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="customTimeGroup" style="display: none;">
+                        <label for="customTime">🕐 Custom Pickup Time</label>
+                        <input type="datetime-local" class="form-control" id="customTime">
+                    </div>
+                </div>
+
+                <!-- Fare Estimation Card -->
+                <div class="fare-card" id="fareCard" style="display: none;">
+                    <div class="fare-grid">
+                        <div class="fare-item">
+                            <div class="fare-value" id="distanceValue">--</div>
+                            <div class="fare-label">Distance (km)</div>
+                        </div>
+                        <div class="fare-item">
+                            <div class="fare-value" id="durationValue">--</div>
+                            <div class="fare-label">Duration (min)</div>
+                        </div>
+                        <div class="fare-item">
+                            <div class="fare-value" id="demanddLevel">Low</div>
+                            <div class="fare-label">Demand Level</div>
+                        </div>
+                    </div>
+                    <div class="final-fare">
+                        <div class="amount" id="finalFare">₹--</div>
+                        <div class="fare-note" id="fareBreakdown">Select route for fare estimate</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <button class="btn btn-secondary" onclick="calculateEstimate()">💰 Check Fare</button>
+                    <button class="btn" onclick="findAutos()">🔍 Find Autos</button>
+                </div>
+
+                <!-- Live Tracking Panel -->
+                <div class="tracking-panel" id="trackingPanel">
+                    <h3>🚗 Your Auto is on the way!</h3>
+                    <div class="journey-progress">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="driver-info">
+                        <div class="info-item">
+                            <div class="info-label">Driver</div>
+                            <div class="info-value" id="driverName">Ravi Kumar</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Auto Number</div>
+                            <div class="info-value" id="autoNumber">TN 20 AB 1234</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">ETA</div>
+                            <div class="info-value" id="etaTime">5 min</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Contact</div>
+                            <div class="info-value" id="driverPhone">9876543210</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="callDriver()">📞 Call Driver</button>
+                        <button class="btn btn-danger" onclick="cancelRide()">❌ Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Driver Panel -->
+            <div class="card" id="driverPanel" style="display: none;">
+                <h2>🚙 Driver Dashboard</h2>
+                
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="driverName">👤 Driver Name</label>
+                            <input type="text" class="form-control" id="driverNameInput" placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="autoNumberInput">🚗 Auto Number</label>
+                            <input type="text" class="form-control" id="autoNumberInput" placeholder="TN 20 XXXX">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="driverPhone">📱 Contact Number</label>
+                            <input type="tel" class="form-control" id="driverPhoneInput" placeholder="+91 9876543210">
+                        </div>
+                        <div class="form-group">
+                            <label for="currentArea">📍 Current Area</label>
+                            <select class="form-control" id="currentArea">
+                                <option value="mbu-campus">MBU Campus</option>
+                                <option value="tirupati">Tirupati</option>
+                                <option value="railway-station">Railway Station</option>
+                                <option value="bus-station">Bus Station</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="goOnline()">🟢 Go Online</button>
+
+                <!-- Driver Earnings -->
+                <div class="fare-card">
+                    <h3>💰 Today's Earnings</h3>
+                    <div class="fare-grid">
+                        <div class="fare-item">
+                            <div class="fare-value">8</div>
+                            <div class="fare-label">Trips Completed</div>
+                        </div>
+                        <div class="fare-item">
+                            <div class="fare-value">₹2,450</div>
+                            <div class="fare-label">Total Earnings</div>
+                        </div>
+                        <div class="fare-item">
+                            <div class="fare-value">4.8⭐</div>
+                            <div class="fare-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div class="card" id="adminPanel" style="display: none;">
+                <h2>⚙ System Admin</h2>
+                
+                <div class="form-section">
+                    <h3>🎛 Dynamic Pricing Controls</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="baseFareMultiplier">Base Fare Multiplier</label>
+                            <input type="range" class="form-control" id="baseFareMultiplier" min="0.8" max="2.0" step="0.1" value="1.0" onchange="updatePricing()">
+                            <span id="baseFareValue">1.0x</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="peakHourMultiplier">Peak Hour Multiplier</label>
+                            <input type="range" class="form-control" id="peakHourMultiplier" min="1.0" max="3.0" step="0.1" value="1.5" onchange="updatePricing()">
+                            <span id="peakHourValue">1.5x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fare-card">
+                    <h3>📊 System Metrics</h3>
+                    <div class="fare-grid">
+                        <div class="fare-item">
+                            <div class="fare-value">95%</div>
+                            <div class="fare-label">System Uptime</div>
+                        </div>
+                        <div class="fare-item">
+                            <div class="fare-value">156</div>
+                            <div class="fare-label">Daily Bookings</div>
+                        </div>
+                        <div class="fare-item">
+                            <div class="fare-value">₹45,670</div>
+                            <div class="fare-label">Total Revenue</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="exportData()">📊 Export Analytics</button>
+            </div>
+        </div>
+
+        <!-- Available Autos Section -->
+        <div class="available-autos" id="autosContainer" style="display: none;">
+            <h3>🚗 Available Autos for Your Route</h3>
+            <div class="alert info" id="autoSearchInfo">
+                <span id="foundAutosCount">12</span> autos found for your route • Sorted by distance and rating
+            </div>
+            <div id="autosList">
+                <!-- Auto cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Live Status Dashboard -->
+        <div class="status-dashboard">
+            <h2>📊 Live Transport Status</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="demand-indicator demand-high">High Demand</div>
+                    <div class="stat-number" id="availableAutos">12</div>
+                    <div class="stat-label">Available Autos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeRides">8</div>
+                    <div class="stat-label">Active Rides</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="waitingStudents">25</div>
+                    <div class="stat-label">Students Waiting</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDrivers">45</div>
+                    <div class="stat-label">Total Drivers</div>
+                </div>
+            </div>
+
+            <!-- Live Map -->
+            <div class="live-map">
+                <div class="map-header">
+                    <div class="map-title">🗺 Live Auto Locations</div>
+                    <div class="live-indicator">
+                        <div class="pulse-dot"></div>
+                        Updates every 10s
+                    </div>
+                </div>
+                <div class="auto-markers" id="mapContainer">
+                    <!-- Dynamic markers will be added here -->
+                </div>
+            </div>
+
+            <!-- Current Pricing Table -->
+            <div class="fare-card">
+                <h3>💰 Current Fare Rates</h3>
+                <div id="pricingTable">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; padding: 15px 0; border-bottom: 1px solid #dee2e6; font-weight: 600;">
+                        <div>Route</div>
+                        <div style="text-align: center;">Base Fare</div>
+                        <div style="text-align: center;">Current Rate</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div>MBU ↔ Tirupati</div>
+                        <div style="text-align: center;">₹350</div>
+                        <div style="text-align: center;">₹420 <span class="price-multiplier">1.2x</span></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div>MBU ↔ Railway Station</div>
+                        <div style="text-align: center;">₹380</div>
+                        <div style="text-align: center;">₹456 <span class="price-multiplier">1.2x</span></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div>MBU ↔ Leela Mall</div>
+                        <div style="text-align: center;">₹280</div>
+                        <div style="text-align: center;">₹280</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; padding: 15px 0;">
+                        <div>MBU ↔ Airport</div>
+                        <div style="text-align: center;">₹450</div>
+                        <div style="text-align: center;">₹540 <span class="price-multiplier">1.2x</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Emergency Widget -->
+    <div class="floating-widget" onclick="emergencyHelp()">
+        🆘 Emergency Help
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
