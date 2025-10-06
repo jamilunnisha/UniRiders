@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>UniRiders - Smart Campus Transportation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00d4ff;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-menu a:hover {
+            color: #00d4ff;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff10" points="0,0 1000,300 1000,1000 0,700"/></svg>');
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: slideInUp 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: slideInUp 1s ease-out 0.2s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideInUp 1s ease-out 0.4s both;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Content Sections */
+        .section {
+            padding: 5rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .section h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            color: #2d3748;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Dashboard Mockup */
+        .dashboard-mockup {
+            background: #f7fafc;
+            padding: 3rem;
+            border-radius: 15px;
+            margin: 3rem 0;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Live Demo Section */
+        .demo-section {
+            background: linear-gradient(135deg, #1a202c, #2d3748);
+            color: white;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .demo-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .demo-button {
+            background: #00d4ff;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .demo-button:hover {
+            background: #0099cc;
+            transform: scale(1.05);
+        }
+
+        /* Fix: make text inside demo's light cards readable (dark on light background) */
+        .demo-section .dashboard-mockup,
+        .demo-section .dashboard-mockup .dashboard-header,
+        .demo-section .dashboard-mockup p,
+        .demo-section .dashboard-mockup h3,
+        .demo-section .dashboard-mockup .stat-card,
+        .demo-section .dashboard-mockup .stat-label {
+          color: #1a202c; /* dark text for readability inside light cards */
+        }
+
+        /* keep the stat number accent color inside demo mockup */
+        .demo-section .dashboard-mockup .stat-number {
+          color: #00d4ff;
+        }
+
+        /* Map Mockup */
+        .map-container {
+            background: #e2e8f0;
+            height: 400px;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00d4ff;
+            border-radius: 50%;
+            border: 3px solid white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a202c;
+            color: white;
+            padding: 3rem 2rem 1rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #00d4ff;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Hidden sections for navigation */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Animation classes */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="showSection('home')">⚡ UniRiders</a>
+            <ul class="nav-menu">
+                <li><a onclick="showSection('home')">Home</a></li>
+                <li><a href ="rides.html">My Rides</a></li>
+                <li><a href ="routenavigation.html">Live Track</a></li>
+                <li><a href ="chatbot.html">Chat</a></li>
+                <li><a onclick="showSection('features')">Features</a></li>
+                <li><a onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a onclick="showSection('demo')">Live Demo</a></li>
+                <li><a onclick="showSection('about')">About</a></li>
+            </ul>
+            <a href="login.html" class="cta-button">Login</a>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <div id="home" class="page-section active">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>UniRiders</h1>
+                <p>Revolutionary predictive transportation system for MBU campus - balancing supply and demand with AI-powered intelligence</p>
+                <div class="hero-buttons">
+                    <a href="#" class="cta-button" onclick="showSection('demo')">🚀 Live Demo</a>
+                    <a href="#" class="cta-button" onclick="showSection('features')" style="background: rgba(255,255,255,0.2);">📱 Features</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>🎯 Core Innovations</h2>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">🤖</span>
+                    <h3>Predictive AI Engine</h3>
+                    <p>Forecasts demand 48-72 hours ahead using academic calendars, weather data, and student behavior patterns</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">👻</span>
+                    <h3>Ghost Rides System</h3>
+                    <p>Drivers get paid to stay on standby during low-demand periods, ensuring 24/7 availability</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">🚐</span>
+                    <h3>Caravan Mode</h3>
+                    <p>Auto-groups students going to same destination, optimizes for larger vehicles and split fares</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">💎</span>
+                    <h3>Quantum Pricing</h3>
+                    <p>Blockchain-transparent pricing with dynamic adjustments and predictive optimal timing</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">🌙</span>
+                    <h3>Night Owl Network</h3>
+                    <p>Guaranteed late-night transportation with pre-booking and emergency beacon system</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">🏆</span>
+                    <h3>Karma System</h3>
+                    <p>Gamified rewards for students and drivers promoting better behavior and community building</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="page-section">
+        <section class="section" style="padding-top: 8rem;">
+            <h2>🚀 Advanced Features</h2>
+            
+            <div class="dashboard-mockup">
+                <div class="dashboard-header">
+                    <h3>🎪 Gamification & Community</h3>
+                    <span style="color: #00d4ff;">Transportation Karma System</span>
+                </div>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">1,247</div>
+                        <div class="stat-label">Karma Points Earned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">89%</div>
+                        <div class="stat-label">Ride Sharing Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">456</div>
+                        <div class="stat-label">Trees Planted</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">4.8⭐</div>
+                        <div class="stat-label">Average Rating</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🗣️</span>
+                    <h3>Voice Activation</h3>
+                    <p>Book rides using voice commands in Telugu, Hindi, or English with natural language processing</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎯</span>
+                    <h3>Smart Pickup Points</h3>
+                    <p>AI-optimized pickup locations based on real-time campus foot traffic and congestion data</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🌱</span>
+                    <h3>Carbon Tracking</h3>
+                    <p>Monitor your environmental impact with tree-planting partnerships and eco-friendly rewards</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🆘</span>
+                    <h3>Emergency Mode</h3>
+                    <p>Integrated with campus security for emergency transportation and safety protocols</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <h3>Predictive Analytics</h3>
+                    <p>Machine learning models trained on 2+ years of transportation patterns for accurate forecasting</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔗</span>
+                    <h3>Campus Integration</h3>
+                    <p>Connected to mess cards, timetables, and event systems for comprehensive demand prediction</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="page-section">
+        <section class="section" style="padding-top: 8rem;">
+            <h2>📊 Live Campus Mobility Dashboard</h2>
+            
+            <div class="dashboard-mockup">
+                <div class="dashboard-header">
+                    <h3>Real-Time Transportation Control Center</h3>
+                    <span style="color: #00d4ff;">Last Updated: Just Now</span>
+                </div>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">47</div>
+                        <div class="stat-label">Active Drivers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">156</div>
+                        <div class="stat-label">Students in Queue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2.3 min</div>
+                        <div class="stat-label">Avg Wait Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">₹23</div>
+                        <div class="stat-label">Current Rate to Tirupati</div>
+                    </div>
+                </div>
+
+                <div class="map-container">
+                    <div class="map-pin" style="top: 20%; left: 30%;"></div>
+                    <div class="map-pin" style="top: 40%; left: 60%;"></div>
+                    <div class="map-pin" style="top: 70%; left: 25%;"></div>
+                    <div class="map-pin" style="top: 30%; left: 80%;"></div>
+                    <div class="map-pin" style="top: 60%; left: 45%;"></div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 1.2rem;">
+                        📍 MBU Campus - Live Driver Positions
+                    </div>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">🔥 High</div>
+                        <div class="stat-label">Current Demand</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">🌅 6:30 PM</div>
+                        <div class="stat-label">Next Surge Predicted</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">⚡ 94%</div>
+                        <div class="stat-label">System Efficiency</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">🎯 567</div>
+                        <div class="stat-label">Successful Rides Today</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Demo Section -->
+    <div id="demo" class="page-section">
+        <section class="demo-section" style="margin-top: 6rem;">
+            <div class="demo-container">
+                <h2>🎮 Interactive Live Demo</h2>
+                <p>Experience UniRiders in action - simulate real campus transportation scenarios</p>
+                
+                <div class="demo-controls">
+                    <button class="demo-button" onclick="simulateRushHour()">🚦 Simulate Rush Hour</button>
+                    <button class="demo-button" onclick="simulateNightMode()">🌙 Night Mode</button>
+                    <button class="demo-button" onclick="simulateWeatherImpact()">🌧️ Weather Impact</button>
+                    <button class="demo-button" onclick="simulateCaravan()">🚐 Caravan Mode</button>
+                </div>
+
+                <div class="dashboard-mockup">
+                    <div id="demo-display">
+                        <h3>🎯 Demo Status: Ready</h3>
+                        <p>Click any button above to see UniRiders' intelligent responses to different scenarios</p>
+                        
+                        <div class="map-container">
+                            <div id="demo-pins"></div>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 1.2rem;">
+                                🎮 Interactive Demo Area
+                            </div>
+                        </div>
+                        
+                        <div id="demo-stats" class="dashboard-stats">
+                            <div class="stat-card">
+                                <div class="stat-number">--</div>
+                                <div class="stat-label">Demo Metric 1</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">--</div>
+                                <div class="stat-label">Demo Metric 2</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">--</div>
+                                <div class="stat-label">Demo Metric 3</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">--</div>
+                                <div class="stat-label">Demo Metric 4</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- About Section -->
+    <div id="about" class="page-section">
+        <section class="section" style="padding-top: 8rem;">
+            <h2>🏆 Why UniRiders Wins</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🧠</span>
+                    <h3>AI-First Approach</h3>
+                    <p>Unlike simple ride-sharing apps, we use machine learning to predict demand patterns, optimize routes, and balance supply-demand automatically</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎯</span>
+                    <h3>Campus-Specific Solutions</h3>
+                    <p>Built specifically for MBU's unique challenges - festival rushes, exam periods, late-night returns, and local destination patterns</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💡</span>
+                    <h3>Innovation Beyond Transport</h3>
+                    <p>Ghost Rides, Caravan Mode, Karma System - features that don't exist in any current transportation app</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔮</span>
+                    <h3>Predictive Intelligence</h3>
+                    <p>Forecasts transportation needs 48-72 hours in advance using academic calendars, weather, and behavioral data</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🤝</span>
+                    <h3>Community-Driven</h3>
+                    <p>Gamification and karma systems create a self-sustaining community that improves over time</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⚡</span>
+                    <h3>Real-Time Optimization</h3>
+                    <p>Edge computing and IoT integration for instant demand detection and supply adjustment</p>
+                </div>
+            </div>
+
+            <div class="dashboard-mockup">
+                <h3 style="text-align: center; margin-bottom: 2rem;">🎪 Technical Architecture</h3>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">Node.js</div>
+                        <div class="stat-label">Backend Server</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">TensorFlow</div>
+                        <div class="stat-label">ML Engine</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">React Native</div>
+                        <div class="stat-label">Mobile Apps</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">Redis</div>
+                        <div class="stat-label">Real-time Data</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">Mapbox</div>
+                        <div class="stat-label">Routing Engine</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">Socket.io</div>
+                        <div class="stat-label">Live Updates</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+                <a href="#">API Documentation</a>
+                <a href="#">Developer Portal</a>
+            </div>
+            <p>&copy; 2025 UniRiders. Built for MBU Hackathon - Transportation Revolution</p>
+            <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">
+                🚀 Predictive • 🤖 Intelligent • 🌟 Community-Driven
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation and page switching
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.page-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Trigger animations
+            const cards = document.querySelectorAll('.fade-in');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.animation = 'fadeIn 0.6s ease-out forwards';
+                }, index * 100);
+            });
+        }
+
+        // Demo simulations
+        function simulateRushHour() {
+            updateDemoDisplay(
+                '🚦 Rush Hour Simulation Active',
+                'UniRiders detects 300+ students heading to various destinations. Implementing dynamic pricing and caravan grouping...',
+                [
+                    { number: '312', label: 'Students in Queue' },
+                    { number: '89', label: 'Active Drivers' },
+                    { number: '1.2 min', label: 'Avg Wait Time' },
+                    { number: '₹18-25', label: 'Dynamic Pricing' }
+                ]
+            );
+            animateMapPins(15);
+        }
+
+        function simulateNightMode() {
+            updateDemoDisplay(
+                '🌙 Night Owl Network Activated',
+                'Ghost Rides system ensuring 24/7 availability. Pre-booked returns from Tirupati activated...',
+                [
+                    { number: '12', label: 'Night Drivers' },
+                    { number: '34', label: 'Pre-bookings' },
+                    { number: '100%', label: 'Coverage Rate' },
+                    { number: '₹35', label: 'Night Premium' }
+                ]
+            );
+            animateMapPins(5);
+        }
+
+        function simulateWeatherImpact() {
+            updateDemoDisplay(
+                '🌧️ Weather Impact Analysis',
+                'Heavy rain detected. Increasing driver incentives and adjusting demand predictions...',
+                [
+                    { number: '+45%', label: 'Demand Increase' },
+                    { number: '₹5', label: 'Weather Bonus' },
+                    { number: '23', label: 'Extra Drivers' },
+                    { number: '2.8 min', label: 'Adjusted Wait' }
+                ]
+            );
+            animateMapPins(8);
+        }
+
+        function simulateCaravan() {
+            updateDemoDisplay(
+                '🚐 Caravan Mode Engaged',
+                'Grouping students to same destinations. Shared Autos deployed for optimal cost-sharing...',
+                [
+                    { number: '67', label: 'Group Rides' },
+                    { number: '8', label: 'Shared Autos' },
+                    { number: '₹12', label: 'Per Person Cost' },
+                    { number: '89%', label: 'Satisfaction' }
+                ]
+            );
+            animateMapPins(12);
+        }
+
+        function updateDemoDisplay(title, description, stats) {
+            const display = document.getElementById('demo-display');
+            const statsContainer = document.getElementById('demo-stats');
+            
+            display.querySelector('h3').textContent = title;
+            display.querySelector('p').textContent = description;
+            
+            const statCards = statsContainer.querySelectorAll('.stat-card');
+            stats.forEach((stat, index) => {
+                if (statCards[index]) {
+                    statCards[index].querySelector('.stat-number').textContent = stat.number;
+                    statCards[index].querySelector('.stat-label').textContent = stat.label;
+                }
+            });
+        }
+
+        function animateMapPins(count) {
+            const pinsContainer = document.getElementById('demo-pins');
+            pinsContainer.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const pin = document.createElement('div');
+                pin.className = 'map-pin';
+                pin.style.top = Math.random() * 80 + 10 + '%';
+                pin.style.left = Math.random() * 80 + 10 + '%';
+                pin.style.animationDelay = Math.random() * 2 + 's';
+                pinsContainer.appendChild(pin);
+            }
+        }
+
+        // Initialize animations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate counter numbers
+            const counters = document.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent);
+                if (!isNaN(target)) {
+                    let current = 0;
+                    const increment = target / 50;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            counter.textContent = target;
+                            clearInterval(timer);
+                        } else {
+                            counter.textContent = Math.floor(current);
+                        }
+                    }, 50);
+                }
+            });
+
+            // Smooth scrolling for navigation
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            navLinks.forEach(link => {
+               if (link.hasAttribute('onclick')) {
+                     link.addEventListener('click', function(e) {
+                     e.preventDefault();
+                });
+            }
+            });
+        });
+
+        // Add some interactive elements
+        document.addEventListener('mousemove', function(e) {
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+                hero.style.background = `linear-gradient(${x * 360}deg, #667eea 0%, #764ba2 100%)`;
+            }
+        });
+
+        // Auto-update dashboard stats
+        setInterval(function() {
+            const activeSection = document.querySelector('.page-section.active');
+            if (activeSection && activeSection.id === 'dashboard') {
+                const statNumbers = activeSection.querySelectorAll('.stat-number');
+                statNumbers.forEach(stat => {
+                    if (stat.textContent.includes('₹')) {
+                        const currentPrice = parseInt(stat.textContent.replace('₹', ''));
+                        const newPrice = currentPrice + Math.floor(Math.random() * 3 - 1);
+                        stat.textContent = '₹' + Math.max(20, newPrice);
+                    } else if (stat.textContent.includes('min')) {
+                        const currentTime = parseFloat(stat.textContent.replace(' min', ''));
+                        const newTime = (currentTime + (Math.random() * 0.4 - 0.2)).toFixed(1);
+                        stat.textContent = Math.max(0.5, newTime) + ' min';
+                    }
+                });
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
